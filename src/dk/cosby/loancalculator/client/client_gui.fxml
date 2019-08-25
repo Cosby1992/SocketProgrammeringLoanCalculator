@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dk.cosby.loancalculator.client.ClientController">
+   <children>
+      <Label layoutX="14.0" layoutY="14.0" text="Låneberegner Client">
+         <font>
+            <Font size="36.0" />
+         </font>
+      </Label>
+      <Button fx:id="btn_connect_to_server" layoutX="14.0" layoutY="355.0" mnemonicParsing="false" onAction="#connectToServer" text="Connect to Server" />
+      <TextArea fx:id="ta_client_info" disable="true" editable="false" layoutX="14.0" layoutY="67.0" prefHeight="277.0" prefWidth="320.0" />
+      <Label layoutX="359.0" layoutY="67.0" text="Beløb" />
+      <TextField fx:id="tf_loan_amount" layoutX="359.0" layoutY="88.0" />
+      <Label layoutX="361.0" layoutY="137.0" text="Rente" />
+      <TextField fx:id="tf_loan_interest" layoutX="359.0" layoutY="158.0" />
+      <Label layoutX="361.0" layoutY="206.0" text="Løbetid i år" />
+      <TextField fx:id="tf_loan_duration" layoutX="359.0" layoutY="227.0" />
+      <Button fx:id="btn_send_request" layoutX="383.0" layoutY="287.0" mnemonicParsing="false" onAction="#sendRequest" text="Send forespørgsel" />
+   </children>
+</AnchorPane>
