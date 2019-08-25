@@ -38,11 +38,12 @@ public class ClientHandler implements Runnable {
                 System.out.println("Getting object from client");
                 Loan loan = (Loan) objectInputStream.readObject();
 
-                if(loan.getAmount() == 0 && loan.getInterest() == 0 && loan.getDuration() == 0){
+                if (loan.getAmount() == 0 && loan.getInterest() == 0 && loan.getDuration() == 0) {
                     objectInputStream.close();
                     objectOutputStream.close();
                     socket.close();
                     break;
+
                 } else {
                     ta_server_info.appendText("\nRequest received from client " + socket.getInetAddress().getHostAddress() + ":" + socket.getPort());
                     ta_server_info.appendText("\nTimestamp: " + new Date());
@@ -65,11 +66,20 @@ public class ClientHandler implements Runnable {
                     objectOutputStream.writeObject(loanCalc);
                     objectOutputStream.flush();
 
-                    ta_server_info.appendText("Object written to client");
+                    ta_server_info.appendText("\nObject written to client");
                 }
 
-            } catch (EOFException e){
+            } catch (EOFException e) {
                 System.out.println("EOF error");
+                break;
+            } catch (java.net.SocketException e){
+                try {
+                    objectInputStream.close();
+                    objectOutputStream.close();
+                    socket.close();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
                 break;
             } catch (IOException e) {
                 e.printStackTrace();

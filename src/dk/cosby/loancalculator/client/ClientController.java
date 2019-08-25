@@ -141,7 +141,6 @@ public class ClientController {
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();
                     }
-
                 }
             });
 
