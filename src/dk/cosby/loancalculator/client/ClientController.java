@@ -21,6 +21,8 @@ public class ClientController {
     public Button btn_connect_to_server;
 
     private Socket socket;
+    private ObjectInputStream ois;
+    private ObjectOutputStream oos;
 
     public TextArea ta_client_info;
     public TextField tf_loan_amount;
@@ -82,8 +84,11 @@ public class ClientController {
                     socket = new Socket(HOST, PORT);
                     ta_client_info.appendText("\nConnection to server succeeded");
                     ta_client_info.appendText("\nTimestamp: " + new Date());
-                    ta_client_info.appendText("\nLocal info: " + socket.getLocalAddress() + ":" + socket.getLocalPort());
+                    ta_client_info.appendText("\nLocal info: " + socket.getInetAddress().getAddress() + ":" + socket.getLocalPort());
                     ta_client_info.appendText("\nReady to send request...");
+
+                    oos = new ObjectOutputStream(socket.getOutputStream());
+                    ois = new ObjectInputStream(socket.getInputStream());
 
                     btn_connect_to_server.setDisable(true);
 
@@ -119,19 +124,17 @@ public class ClientController {
                             Integer.valueOf(tf_loan_duration.getText()));
 
                     try {
-                        ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
-                        ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
 
                         System.out.println("Writing object to server");
-                        objectOutputStream.writeObject(loan);
+                        oos.writeObject(loan);
+                        oos.flush();
 
                         System.out.println("Recieving answer from server");
-                        LoanCalc loanCalc = (LoanCalc) objectInputStream.readObject();
+                        LoanCalc loanCalc = (LoanCalc) ois.readObject();
 
                         ta_client_info.appendText("\nRequest succesfully answered.");
                         ta_client_info.appendText("\nTotal pay: " + loanCalc.getTotalPay());
                         ta_client_info.appendText("\nMonthly pay: " + loanCalc.getMonthlyPay());
-
 
                     } catch (IOException e) {
                         e.printStackTrace();

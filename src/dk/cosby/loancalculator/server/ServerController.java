@@ -7,6 +7,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Date;
@@ -16,6 +18,7 @@ public class ServerController{
     private final int PORT = 8000;
     public Button btn_start_server;
     public TextArea ta_server_info;
+
 
     public void initialize(){
         ta_server_info.textProperty().addListener(new ChangeListener<Object>() {
@@ -40,21 +43,26 @@ public class ServerController{
                 @Override
                 public void run() {
                     try {
+
                         while (true) {
+
                             Socket socket = serverSocket.accept();
                             ta_server_info.appendText("\nConnection to host established");
                             ta_server_info.appendText("\nTimestamp: " + new Date());
                             ta_server_info.appendText("\nClient info: " + socket.getInetAddress().toString() + ":" + socket.getPort());
 
+                            ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+                            ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+
 
                             ta_server_info.appendText("\nWaiting for Client to send request");
-                            ClientHandler clientHandler = new ClientHandler(socket, ta_server_info);
+                            ClientHandler clientHandler = new ClientHandler(socket, ois, oos, ta_server_info);
 
                             Thread thread1 = new Thread(clientHandler);
                             thread1.start();
                         }
 
-                    }  catch (IOException e) {
+                    } catch (IOException e) {
                         ta_server_info.appendText("\nFailed to connect to client.");
                         e.printStackTrace();
                     }

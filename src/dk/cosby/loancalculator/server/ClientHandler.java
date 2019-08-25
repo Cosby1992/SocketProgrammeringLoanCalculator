@@ -12,37 +12,38 @@ import java.util.Date;
 
 public class ClientHandler implements Runnable {
 
-    private Socket socket;
+
     private LoanCalc loanCalc;
     private Loan clientLoanRequst;
     private TextArea ta_server_info;
 
-    private ObjectOutputStream objectOutputStream;
-    private ObjectInputStream objectInputStream;
+    private final Socket socket;
+    private final ObjectOutputStream objectOutputStream;
+    private final ObjectInputStream objectInputStream;
 
 
-    public ClientHandler(Socket socket, TextArea textArea) {
+    public ClientHandler(Socket socket, ObjectInputStream ois, ObjectOutputStream oos, TextArea textArea) {
         this.socket = socket;
+        this.objectInputStream = ois;
+        this.objectOutputStream = oos;
         ta_server_info = textArea;
     }
 
     @Override
     public void run() {
 
-        try {
+        while(socket.isConnected()) {
 
+            try {
+                System.out.println("Getting object from client");
+                Loan loan = (Loan) objectInputStream.readObject();
 
-            objectInputStream = new ObjectInputStream(socket.getInputStream());
-            objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
-            System.out.println("Input/output stream from socket created");
-
-
-            while(true) {
-
-                try {
-                    System.out.println("Getting object from client");
-                    Loan loan = (Loan) objectInputStream.readObject();
-
+                if(loan.getAmount() == 0 && loan.getInterest() == 0 && loan.getDuration() == 0){
+                    objectInputStream.close();
+                    objectOutputStream.close();
+                    socket.close();
+                    break;
+                } else {
                     ta_server_info.appendText("\nRequest received from client " + socket.getInetAddress().getHostAddress() + ":" + socket.getPort());
                     ta_server_info.appendText("\nTimestamp: " + new Date());
                     ta_server_info.appendText("\nAmount: " + loan.getAmount());
@@ -62,17 +63,22 @@ public class ClientHandler implements Runnable {
 
                     System.out.println("Writing object to client");
                     objectOutputStream.writeObject(loanCalc);
+                    objectOutputStream.flush();
 
                     ta_server_info.appendText("Object written to client");
-                } catch (EOFException e){
-                    break;
                 }
+
+            } catch (EOFException e){
+                System.out.println("EOF error");
+                break;
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
             }
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+
+        System.out.println("Clienthandler disconnected");
 
     }
 
