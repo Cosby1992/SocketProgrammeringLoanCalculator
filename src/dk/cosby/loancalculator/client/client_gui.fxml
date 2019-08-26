@@ -23,5 +23,7 @@
       <Label layoutX="361.0" layoutY="206.0" text="Løbetid i år" />
       <TextField fx:id="tf_loan_duration" layoutX="359.0" layoutY="227.0" />
       <Button fx:id="btn_send_request" layoutX="383.0" layoutY="287.0" mnemonicParsing="false" onAction="#sendRequest" text="Send forespørgsel" />
+      <Button fx:id="btn_bmi_calculator" layoutX="456.0" layoutY="355.0" mnemonicParsing="false" onAction="#switchScene" text="Gå til BMI beregner" />
+
    </children>
 </AnchorPane>

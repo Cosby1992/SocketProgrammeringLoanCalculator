@@ -1,5 +1,6 @@
 package dk.cosby.loancalculator.client;
 
+import dk.cosby.loancalculator.server.BmiCalc;
 import dk.cosby.loancalculator.server.LoanCalc;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -18,25 +19,22 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.Date;
 
-public class ClientController {
+public class BmiCalcGui {
 
     private final int PORT = 8000;
     private final String HOST = "localhost";
+
+    public TextField tf_height;
+    public TextField tf_weight;
+    public Button btn_loan_calculator;
+    public TextArea ta_client_info;
     public Button btn_connect_to_server;
-    public Button btn_bmi_calculator;
 
     private Socket socket;
     private ObjectInputStream ois;
     private ObjectOutputStream oos;
 
-    public TextArea ta_client_info;
-    public TextField tf_loan_amount;
-    public TextField tf_loan_interest;
-    public TextField tf_loan_duration;
-
-    //takes care of textfield inputs using change listener
-    @SuppressWarnings("Duplicates")
-    public void initialize(){
+    public void initialize() {
 
         ta_client_info.textProperty().addListener(new ChangeListener<Object>() {
             @Override
@@ -47,40 +45,31 @@ public class ClientController {
             }
         });
 
-        tf_loan_amount.textProperty().addListener(new ChangeListener<String>() {
+        tf_height.textProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
 
                 if (!newValue.matches("\\d*")) {
-                    tf_loan_amount.setText(newValue.replaceAll("[^\\d]", ""));
+                    tf_height.setText(newValue.replaceAll("[^\\d]", ""));
                 }
             }
         });
 
-        tf_loan_interest.textProperty().addListener(new ChangeListener<String>() {
+        tf_weight.textProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
 
                 if (!newValue.matches("\\d*")) {
-                    tf_loan_interest.setText(newValue.replaceAll("[^\\d]", ""));
+                    tf_weight.setText(newValue.replaceAll("[^\\d]", ""));
                 }
             }
         });
-
-        tf_loan_duration.textProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-
-                if (!newValue.matches("\\d*")) {
-                    tf_loan_duration.setText(newValue.replaceAll("[^\\d]", ""));
-                }
-            }
-        });
-
     }
 
-    public void connectToServer(ActionEvent actionEvent) {
 
+
+    @SuppressWarnings("Duplicates")
+    public void connectToServer(ActionEvent actionEvent) {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -105,41 +94,36 @@ public class ClientController {
         });
 
         thread.start();
-
-
     }
 
-    public void sendRequest(ActionEvent actionEvent) {
 
-        if(!tf_loan_amount.getText().isEmpty()
-        && !tf_loan_interest.getText().isEmpty()
-        && !tf_loan_duration.getText().isEmpty()){
+    public void sendRequest(ActionEvent actionEvent) {
+        if(!tf_height.getText().isEmpty()
+                && !tf_weight.getText().isEmpty()){
 
             ta_client_info.appendText("\nSending request to server: ");
-            ta_client_info.appendText("\nLoan amount: " + tf_loan_amount.getText());
-            ta_client_info.appendText("\nLoan Interest: " + tf_loan_interest.getText());
-            ta_client_info.appendText("\nLoan Duration: " + tf_loan_duration.getText() + " years");
+            ta_client_info.appendText("\nLoan height: " + tf_height.getText());
+            ta_client_info.appendText("\nLoan weight: " + tf_weight.getText());
 
             Thread thread = new Thread(new Runnable() {
                 @Override
                 public void run() {
 
-                    Loan loan = new Loan(Double.valueOf(tf_loan_amount.getText()),
-                            Double.valueOf(tf_loan_interest.getText()),
-                            Integer.valueOf(tf_loan_duration.getText()));
+                    Bmi bmi = new Bmi(Integer.valueOf(tf_height.getText()),
+                            Integer.valueOf(tf_weight.getText()));
 
                     try {
 
                         System.out.println("Writing object to server");
-                        oos.writeObject(loan);
+                        oos.writeObject(bmi);
                         oos.flush();
 
                         System.out.println("Recieving answer from server");
-                        LoanCalc loanCalc = (LoanCalc) ois.readObject();
+                        BmiCalc bmiCalc = (BmiCalc) ois.readObject();
 
                         ta_client_info.appendText("\nRequest succesfully answered.");
-                        ta_client_info.appendText("\nTotal pay: " + loanCalc.getTotalPay());
-                        ta_client_info.appendText("\nMonthly pay: " + loanCalc.getMonthlyPay());
+                        ta_client_info.appendText("\nDin bmi er: " + bmiCalc.getBmi());
+                        ta_client_info.appendText("\nDet gør dig: " + bmiCalc.getStatus());
 
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -155,16 +139,14 @@ public class ClientController {
             ta_client_info.appendText("\nTextfield must contain numbers");
             ta_client_info.appendText("\nFill in the blanks and try again.");
         }
-
     }
 
     public void switchScene(ActionEvent actionEvent) throws IOException {
-
         Stage stage;
         Parent root;
 
-        stage = (Stage) btn_bmi_calculator.getScene().getWindow();
-        root = FXMLLoader.load(getClass().getClassLoader().getResource("dk/cosby/loancalculator/client/bmi_calc_gui.fxml"));
+        stage = (Stage) btn_loan_calculator.getScene().getWindow();
+        root = FXMLLoader.load(getClass().getClassLoader().getResource("dk/cosby/loancalculator/client/client_gui.fxml"));
 
         Scene scene = new Scene(root);
         stage.setScene(scene);
